@@ -1,3 +1,23 @@
+# Build and Release Folders
+bin-debug/
+bin-release/
+[Oo]bj/
+[Bb]in/
+.vs/
+Debug/
+Release/
+
+# Other files and folders
+.settings/
+
+# Executables
+*.swf
+*.air
+*.ipa
+*.apk
+*.exe
+*.pdb
+
 # Prerequisites
 *.d
 
@@ -30,3 +50,4 @@
 *.exe
 *.out
 *.app
+
