@@ -2,11 +2,14 @@
 #include<functional>
 #include<string>
 #include"tgaimage.h"
+
 class Chapter_One
 {
 public:
-	void TryDrawLine();
+	void DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color);
 
+
+	void TryDrawLine();
 	void FirstTryDrawLine();
 	void SecondTryDrawLine();
 	void ThirdTryDrawLine();

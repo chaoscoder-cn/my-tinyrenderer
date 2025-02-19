@@ -1,6 +1,12 @@
 #include "Chapter_One.h"
 #include<algorithm>
 
+void Chapter_One::DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
+{
+	mDrawLineFunc = DrawLineBySimple5;
+	mDrawLineFunc(x0, y0, x1, y1, image, color);
+}
+
 void Chapter_One::TryDrawLine()
 {
 	TGAImage image(1000, 1000, TGAImage::RGB);
