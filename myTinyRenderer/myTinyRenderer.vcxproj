@@ -19,13 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Chapter_One.cpp" />
+    <ClCompile Include="src\DrawLine.cpp" />
+    <ClCompile Include="src\DrawTriangle.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\tgaimage\tgaimage.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Chapter_One.h" />
+    <ClInclude Include="src\DrawLine.h" />
+    <ClInclude Include="src\DrawTriangle.h" />
     <ClInclude Include="src\geometry.h" />
     <ClInclude Include="src\Log.h" />
     <ClInclude Include="src\model.h" />

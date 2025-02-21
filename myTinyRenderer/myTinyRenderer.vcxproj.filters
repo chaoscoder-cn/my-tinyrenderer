@@ -23,10 +23,13 @@
     <ClCompile Include="src\tgaimage\tgaimage.cpp">
       <Filter>TgaImage</Filter>
     </ClCompile>
-    <ClCompile Include="src\Chapter_One.cpp">
+    <ClCompile Include="src\DrawLine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\model.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DrawTriangle.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -37,13 +40,16 @@
     <ClInclude Include="src\Log.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\Chapter_One.h">
+    <ClInclude Include="src\DrawLine.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\geometry.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\model.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DrawTriangle.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
