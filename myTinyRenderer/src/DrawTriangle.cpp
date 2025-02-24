@@ -28,7 +28,6 @@ void DrawTriangle::DrawTriangleBySimple1( Vec2i p0, Vec2i p1, Vec2i p2, TGAImage
 		}
 	}
 }
-
 DrawTriangleByDepth::DrawTriangleByDepth(int image_width, int image_height)
 {
 	zbuffer = new float[image_width * image_height];
