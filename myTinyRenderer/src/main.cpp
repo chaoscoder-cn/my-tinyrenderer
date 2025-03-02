@@ -1,5 +1,4 @@
 #include "tgaimage.h"
-#include "Log.h"
 #include "DrawLine.h"
 #include "DrawTriangle.h"
 #include "model.h"
@@ -12,8 +11,42 @@ const int width = 1000;
 const int height = 1000;
 int main()
 {
-
 	TGAImage tgaImage(width, height, TGAImage::RGB);
+	DrawTriangleByDepth drawTriangleByDepth(width, height);
+
+	std::string obj_path = "african_head.obj";
+	Model model(obj_path.data());
+
+	Vec3f light_dir(0, 0, -1);
+	for (int i = 0; i < model.nfaces(); i++)
+	{
+		std::vector<int>face_i = model.face(i);
+		Vec3f p[3];
+		Vec3f w[3];
+		for (int j = 0; j < 3; j++)
+		{
+			float p_x = model.vert(face_i[j]).x;
+			float p_y = model.vert(face_i[j]).y;
+			p[j].x = (p_x + 1) / 2 * width;
+			p[j].y = (p_y + 1) / 2 * height;
+			p[j].z = model.vert(face_i[j]).z;
+			w[j] = model.vert(face_i[j]);
+		}
+		Vec3f n = (w[2] - w[0]) ^ ((w[1] - w[0]));
+		n.normalize();
+		float intensity = n * light_dir;
+		if (intensity > 0.f)
+		{
+			TGAColor drawColor(255 * intensity, 255 * intensity, 255 * intensity, 255 * intensity);
+			drawTriangleByDepth.DrawTriangleByBarycentric(p, tgaImage, drawColor);
+		}
+	}
+
+	tgaImage.flip_vertically();
+	tgaImage.write_tga_file("obj_3.tga");
+
+	//绘制带有平行光效果的obj
+	/*TGAImage tgaImage(width, height, TGAImage::RGB);
 	DrawTriangle drawTriangle;
 
 	std::string obj_path = "african_head.obj";
@@ -43,7 +76,8 @@ int main()
 	}
 
 	tgaImage.flip_vertically();
-	tgaImage.write_tga_file("obj.tga");
+	tgaImage.write_tga_file("obj.tga");*/
+	
 
 	//直接绘制obj的所有面
 	/*TGAImage tgaImage(width, height, TGAImage::RGB);
