@@ -1,63 +1,13 @@
-#include "Chapter_One.h"
+#include "DrawLine.h"
 #include<algorithm>
 
-void Chapter_One::DrawLine(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
+void DrawLine::DrawLineByBresenHam(const Vec2i& p0, const Vec2i& p1, TGAImage& image, TGAColor& color)
 {
-	mDrawLineFunc = DrawLineBySimple5;
-	mDrawLineFunc(x0, y0, x1, y1, image, color);
+	DrawLineBySimple5(p0.x, p0.y, p1.x, p1.y, image, color);
 }
 
-void Chapter_One::TryDrawLine()
-{
-	TGAImage image(1000, 1000, TGAImage::RGB);
 
-	TGAColor drawColor(255, 0, 0, 255);
-	if(mDrawLineFunc!=nullptr)
-	{
-		mDrawLineFunc(2, 48, 821, 990, image, drawColor);
-		mDrawLineFunc(2, 48, 10, 990, image, drawColor);
-		mDrawLineFunc(1, 900, 999, 500, image, drawColor);
-		mDrawLineFunc(1, 900, 500, 1, image, drawColor);
-		image.write_tga_file(mOutputTgaPath.data());
-	}
-}
-
-void Chapter_One::FirstTryDrawLine()
-{
-	mOutputTgaPath = "Chapter1_1.tga";
-	mDrawLineFunc = DrawLineBySimple1;
-	TryDrawLine();
-}
-
-void Chapter_One::SecondTryDrawLine()
-{
-	mOutputTgaPath = "Chapter1_2.tga";
-	mDrawLineFunc = DrawLineBySimple2;
-	TryDrawLine();
-}
-
-void Chapter_One::ThirdTryDrawLine()
-{
-	mOutputTgaPath = "Chapter1_3.tga";
-	mDrawLineFunc = DrawLineBySimple3;
-	TryDrawLine();
-}
-
-void Chapter_One::FourthTryDrawLine()
-{
-	mOutputTgaPath = "Chapter1_4.tga";
-	mDrawLineFunc = DrawLineBySimple4;
-	TryDrawLine();
-}
-
-void Chapter_One::FifthTryDrawLine()
-{
-	mOutputTgaPath = "Chapter1_5.tga";
-	mDrawLineFunc = DrawLineBySimple5;
-	TryDrawLine();
-}
-
-void Chapter_One::DrawLineBySimple1(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
+void DrawLine::DrawLineBySimple1(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
 {
 	for(float i=0.f;i<=1.f;i+=0.001f)
 	{
@@ -67,7 +17,7 @@ void Chapter_One::DrawLineBySimple1(int x0, int y0, int x1, int y1, TGAImage& im
 	}
 }
 
-void Chapter_One::DrawLineBySimple2(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
+void DrawLine::DrawLineBySimple2(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
 {
 	for (int x = x0; x <= x1; x++)
 	{
@@ -77,7 +27,7 @@ void Chapter_One::DrawLineBySimple2(int x0, int y0, int x1, int y1, TGAImage& im
 	}
 }
 
-void Chapter_One::DrawLineBySimple3(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
+void DrawLine::DrawLineBySimple3(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
 {
 	bool isNeedSwap = false;
 	if(std::abs(x0-x1)<std::abs(y0-y1))
@@ -110,7 +60,7 @@ void Chapter_One::DrawLineBySimple3(int x0, int y0, int x1, int y1, TGAImage& im
 	}
 }
 
-void Chapter_One::DrawLineBySimple4(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
+void DrawLine::DrawLineBySimple4(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
 {
 	bool isNeedSwap = false;
 	if (std::abs(x0 - x1) < std::abs(y0 - y1))
@@ -153,7 +103,7 @@ void Chapter_One::DrawLineBySimple4(int x0, int y0, int x1, int y1, TGAImage& im
 	}
 }
 
-void Chapter_One::DrawLineBySimple5(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
+void DrawLine::DrawLineBySimple5(int x0, int y0, int x1, int y1, TGAImage& image, TGAColor& color)
 {
 	bool isNeedSwap = false;
 	if (std::abs(x0 - x1) < std::abs(y0 - y1))
@@ -198,3 +148,5 @@ void Chapter_One::DrawLineBySimple5(int x0, int y0, int x1, int y1, TGAImage& im
 		}
 	}
 }
+
+
