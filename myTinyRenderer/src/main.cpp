@@ -3,18 +3,25 @@
 #include "DrawTriangle.h"
 #include "model.h"
 
-TGAColor white(255, 255, 255, 255);
-TGAColor red(255, 0, 0, 255);
-TGAColor green(0, 255, 0, 255);
+//TGAColor white(255, 255, 255, 255);
+//TGAColor red(255, 0, 0, 255);
+//TGAColor green(0, 255, 0, 255);
 
-const int width = 1000;
-const int height = 1000;
+const int width = 800;
+const int height = 800;
+float zBuffer[width * height+10];
+
 int main()
 {
 	TGAImage tgaImage(width, height, TGAImage::RGB);
 	DrawTriangleByDepth drawTriangleByDepth(width, height);
 
 	std::string obj_path = "african_head.obj";
+
+	
+	memset(zBuffer, -0x3f, sizeof(zBuffer));
+
+
 	Model model(obj_path.data());
 
 	Vec3f light_dir(0, 0, -1);
@@ -37,13 +44,19 @@ int main()
 		float intensity = n * light_dir;
 		if (intensity > 0.f)
 		{
-			TGAColor drawColor(255 * intensity, 255 * intensity, 255 * intensity, 255 * intensity);
-			drawTriangleByDepth.DrawTriangleByBarycentric(p, tgaImage, drawColor);
+			Vec2i uv[3];
+			for (int j = 0; j < 3; j++) uv[j] = model.uv(i, j);
+
+			//TGAColor drawColor(255 * intensity, 255 * intensity, 255 * intensity, 255 * intensity);
+			drawTriangleByDepth.DrawTriangleByUV(p, uv, zBuffer, tgaImage,
+				model,intensity
+				);
+
 		}
 	}
 
 	tgaImage.flip_vertically();
-	tgaImage.write_tga_file("obj_3.tga");
+	tgaImage.write_tga_file("obj_4.tga");
 
 	//绘制带有平行光效果的obj
 	/*TGAImage tgaImage(width, height, TGAImage::RGB);
