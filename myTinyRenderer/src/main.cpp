@@ -41,16 +41,14 @@ int main()
 		}
 		Vec3f n = (w[2] - w[0]) ^ ((w[1] - w[0]));
 		n.normalize();
-		float intensity = n * light_dir;
+		float intensity =  n * light_dir;
 		if (intensity > 0.f)
 		{
 			Vec2i uv[3];
-			for (int j = 0; j < 3; j++) uv[j] = model.uv(i, j);
+			for (int j = 0; j < 3; j++) 
+				uv[j] = model.uv(i, j);
 
-			//TGAColor drawColor(255 * intensity, 255 * intensity, 255 * intensity, 255 * intensity);
-			drawTriangleByDepth.DrawTriangleByUV(p, uv, zBuffer, tgaImage,
-				model,intensity
-				);
+			drawTriangleByDepth.DrawTriangleByUV(p, uv, zBuffer, tgaImage, model, intensity);
 
 		}
 	}
