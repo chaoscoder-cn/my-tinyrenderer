@@ -3,18 +3,63 @@
 #include "DrawTriangle.h"
 #include "model.h"
 
-TGAColor white(255, 255, 255, 255);
-TGAColor red(255, 0, 0, 255);
-TGAColor green(0, 255, 0, 255);
 
-const int width = 1000;
-const int height = 1000;
+const int width = 800;
+const int height = 800;
+const int depth = 255;
+float zBuffer[width * height+10];
+Vec3f camera(0, 0, 3);
+
+Vec3f m2v(Matrix m)
+{
+	return Vec3f(m[0][0] / m[3][0], m[1][0] / m[3][0], m[2][0] / m[3][0]);
+}
+
+//3d-->4d
+//添加一个1表示坐标
+Matrix v2m(Vec3f v)
+{
+	Matrix m(4, 1);
+	m[0][0] = v.x;
+	m[1][0] = v.y;
+	m[2][0] = v.z;
+	m[3][0] = 1.f;
+	return m;
+}
+
+//视角矩阵
+//将物体x，y坐标(-1,1)转换到屏幕坐标(100,700)    1/8width~7/8width
+//zbuffer(-1,1)转换到0~255
+Matrix viewport(int x, int y, int w, int h)
+{
+	Matrix m = Matrix::identity(4);
+	//第4列表示平移信息
+	m[0][3] = x + w / 2.f;
+	m[1][3] = y + h / 2.f;
+	m[2][3] = depth / 2.f;
+	//对角线表示缩放信息
+	m[0][0] = w / 2.f;
+	m[1][1] = h / 2.f;
+	m[2][2] = depth / 2.f;
+	return m;
+}
+
+
 int main()
 {
 	TGAImage tgaImage(width, height, TGAImage::RGB);
 	DrawTriangleByDepth drawTriangleByDepth(width, height);
 
 	std::string obj_path = "african_head.obj";
+	
+	memset(zBuffer, -0x3f, sizeof(zBuffer));
+
+
+	Matrix Projection = Matrix::identity(4);
+	Matrix ViewPort = viewport(width / 8.0, height / 8.0, width * 3.0 / 4, height * 3.0 / 4);
+
+	Projection[3][2] = -1.f / camera.z;
+
 	Model model(obj_path.data());
 
 	Vec3f light_dir(0, 0, -1);
@@ -25,25 +70,28 @@ int main()
 		Vec3f w[3];
 		for (int j = 0; j < 3; j++)
 		{
-			float p_x = model.vert(face_i[j]).x;
-			float p_y = model.vert(face_i[j]).y;
-			p[j].x = (p_x + 1) / 2 * width;
-			p[j].y = (p_y + 1) / 2 * height;
-			p[j].z = model.vert(face_i[j]).z;
+			Vec3f v = model.vert(face_i[j]);
+
 			w[j] = model.vert(face_i[j]);
+			p[j] = m2v(ViewPort * Projection * v2m(v));
+			
 		}
 		Vec3f n = (w[2] - w[0]) ^ ((w[1] - w[0]));
 		n.normalize();
-		float intensity = n * light_dir;
+		float intensity =  n * light_dir;
 		if (intensity > 0.f)
 		{
-			TGAColor drawColor(255 * intensity, 255 * intensity, 255 * intensity, 255 * intensity);
-			drawTriangleByDepth.DrawTriangleByBarycentric(p, tgaImage, drawColor);
+			Vec2i uv[3];
+			for (int j = 0; j < 3; j++) 
+				uv[j] = model.uv(i, j);
+
+			drawTriangleByDepth.DrawTriangleByUV(p, uv, zBuffer, tgaImage, model, intensity);
+
 		}
 	}
 
 	tgaImage.flip_vertically();
-	tgaImage.write_tga_file("obj_3.tga");
+	tgaImage.write_tga_file("obj_4.tga");
 
 	//绘制带有平行光效果的obj
 	/*TGAImage tgaImage(width, height, TGAImage::RGB);

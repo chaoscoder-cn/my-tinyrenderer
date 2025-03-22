@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\DrawLine.cpp" />
     <ClCompile Include="src\DrawTriangle.cpp" />
+    <ClCompile Include="src\geometry.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\tgaimage\tgaimage.cpp" />
