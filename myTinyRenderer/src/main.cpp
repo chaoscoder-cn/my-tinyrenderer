@@ -8,7 +8,10 @@ const int width = 800;
 const int height = 800;
 const int depth = 255;
 float zBuffer[width * height+10];
-Vec3f camera(0, 0, 3);
+Vec3f camera(0, 0, 2);
+
+Vec3f eye(2, 1, 3);
+Vec3f center(0, 0, 1);
 
 Vec3f m2v(Matrix m)
 {
@@ -44,6 +47,36 @@ Matrix viewport(int x, int y, int w, int h)
 	return m;
 }
 
+Matrix lookat(Vec3f eye, Vec3f center, Vec3f up)
+{
+
+	//计算出z，根据z和up算出x，再算出y
+	Vec3f z = (eye - center).normalize();
+	Vec3f x = (up ^ z).normalize();
+	Vec3f y = (z ^ x).normalize();
+	Matrix rotation = Matrix::identity(4);
+	Matrix translation = Matrix::identity(4);
+	//矩阵的第四列是用于平移的。因为观察位置从原点变为了center，所以需要将物体平移-center
+	for (int i = 0; i < 3; i++)
+	{
+		rotation[i][3] = -center[i];
+	}
+	//正交矩阵的逆 = 正交矩阵的转置
+	//矩阵的第一行即是现在的x
+	//矩阵的第二行即是现在的y
+	//矩阵的第三行即是现在的z
+	//矩阵的三阶子矩阵是当前视线旋转矩阵的逆矩阵
+	for (int i = 0; i < 3; i++)
+	{
+		rotation[0][i] = x[i];
+		rotation[1][i] = y[i];
+		rotation[2][i] = z[i];
+	}
+	//这样乘法的效果是先平移物体，再旋转
+	Matrix res = rotation * translation;
+	return res;
+
+}
 
 int main()
 {
@@ -55,10 +88,18 @@ int main()
 	memset(zBuffer, -0x3f, sizeof(zBuffer));
 
 
+	Matrix ModelView = lookat(eye, center, Vec3f(0, 1, 0));
+
 	Matrix Projection = Matrix::identity(4);
 	Matrix ViewPort = viewport(width / 8.0, height / 8.0, width * 3.0 / 4, height * 3.0 / 4);
 
-	Projection[3][2] = -1.f / camera.z;
+	//Projection[3][2] = -1.f / camera.z;
+	Projection[3][2] = -1.f / (eye - center).norm();
+
+
+
+
+
 
 	Model model(obj_path.data());
 
@@ -73,7 +114,12 @@ int main()
 			Vec3f v = model.vert(face_i[j]);
 
 			w[j] = model.vert(face_i[j]);
-			p[j] = m2v(ViewPort * Projection * v2m(v));
+			//1. World To CameraView
+			Matrix m_v = ModelView * v2m(v);
+			//2. CameraView To Projection
+
+			//3. Projection to ViewPort
+			p[j] = m2v(ViewPort * Projection * m_v);
 			
 		}
 		Vec3f n = (w[2] - w[0]) ^ ((w[1] - w[0]));
