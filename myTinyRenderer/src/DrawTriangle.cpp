@@ -16,7 +16,8 @@ DrawTriangleByDepth::~DrawTriangleByDepth()
 		delete[]zbuffer;
 }
 
-void DrawTriangleByDepth::DrawTriangleByUV(Vec3f* pts, Vec2i* uvs, float* zbuffer, TGAImage& image, Model& model, float intensity)
+//intensitys[0]、intensitys[1]、intensitys[2] 表示3个点的光照强度
+void DrawTriangleByDepth::DrawTriangleByUV(Vec3f* pts, Vec2i* uvs, float* zbuffer, TGAImage& image, Model& model, Vec3f intensitys)
 {
 	Point leftTop, rightBottom;
 	GetTriangleBound(pts[0], pts[1], pts[2], leftTop, rightBottom);
@@ -32,7 +33,10 @@ void DrawTriangleByDepth::DrawTriangleByUV(Vec3f* pts, Vec2i* uvs, float* zbuffe
 
 			Vec2i uv = uvs[0] * baryCoord.x + uvs[1] * baryCoord.y + uvs[2] * baryCoord.z;
 			float z = pts[0].z * baryCoord.x + pts[1].z * baryCoord.y + pts[2].z * baryCoord.z;
-			if (zbuffer[x + y * image.get_width()] < z)
+			float intensity = intensitys[0] * baryCoord.x + intensitys[1] * baryCoord.y + intensitys[2] * baryCoord.z;
+
+			// 限制光照强度在 [0, 1] 范围内
+			intensity = std::max(0.f, std::min(1.f, intensity));			if (zbuffer[x + y * image.get_width()] < z)
 			{
 				zbuffer[x + y * image.get_width()] = z;
 				TGAColor color = model.diffuse(uv);
