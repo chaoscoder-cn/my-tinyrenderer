@@ -102,7 +102,8 @@ int main()
 
 	Model model(obj_path.data());
 
-	Vec3f light_dir = Vec3f(0, -1, -1).normalize();
+
+	Vec3f light_dir = Vec3f(0, 1, 1).normalize();	
 	for (int i = 0; i < model.nfaces(); i++)
 	{
 		std::vector<int>face_i = model.face(i);
@@ -117,13 +118,11 @@ int main()
 			//1. World To CameraView
 			Matrix m_v = ModelView * v2m(v);
 			//2. CameraView To Projection
-
 			//3. Projection to ViewPort
 			p[j] = m2v(ViewPort * Projection * m_v);
 			intensity[j] = model.normal(i, j) * light_dir;
 			
 		}
-		//intensity.normalize();
 		{
 			Vec2i uv[3];
 			for (int j = 0; j < 3; j++) 
@@ -135,7 +134,7 @@ int main()
 	}
 
 	tgaImage.flip_vertically();
-	tgaImage.write_tga_file("obj_4.tga");
+	tgaImage.write_tga_file("obj_5.tga");
 
 	return 0;
 }

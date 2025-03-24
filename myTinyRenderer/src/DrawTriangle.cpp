@@ -36,9 +36,7 @@ void DrawTriangleByDepth::DrawTriangleByUV(Vec3f* pts, Vec2i* uvs, float* zbuffe
 			float intensity = intensitys[0] * baryCoord.x + intensitys[1] * baryCoord.y + intensitys[2] * baryCoord.z;
 
 			// 限制光照强度在 [0, 1] 范围内
-			intensity = std::max(0.f, std::min(1.f, intensity));
-
-			if (zbuffer[x + y * image.get_width()] < z)
+			intensity = std::max(0.f, std::min(1.f, intensity));			if (zbuffer[x + y * image.get_width()] < z)
 			{
 				zbuffer[x + y * image.get_width()] = z;
 				TGAColor color = model.diffuse(uv);
