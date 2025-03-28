@@ -13,6 +13,17 @@ template <> template <> Vec3<float>::Vec3(const Vec3<int> &v) : x(v.x), y(v.y), 
 
 Matrix::Matrix(int r, int c) : m(std::vector<std::vector<float> >(r, std::vector<float>(c, 0.f))), rows(r), cols(c) { }
 
+Matrix::Matrix(const Vec3f& v)
+{
+	m = std::vector<std::vector<float> >(4, std::vector<float>(1, 0.f));
+	rows = 4;
+	cols = 1;
+	m[0][0] = v.x;
+	m[1][0] = v.y;
+	m[2][0] = v.z;
+	m[3][0] = 1.f;
+}
+
 int Matrix::nrows() {
     return rows;
 }
@@ -97,6 +108,11 @@ Matrix Matrix::inverse() {
         for(int j=0; j<cols; j++)
             truncate[i][j] = result[i][j+cols];
     return truncate;
+}
+
+Vec3f Matrix::GetM2V()
+{
+    return Vec3f(m[0][0] / m[3][0], m[1][0] / m[3][0], m[2][0] / m[3][0]);
 }
 
 std::ostream& operator<<(std::ostream& s, Matrix& m) {

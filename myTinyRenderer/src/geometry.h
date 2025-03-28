@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 template <class t> struct Vec2 {
     t x, y;
@@ -75,6 +76,7 @@ class Matrix {
     int rows, cols;
 public:
     Matrix(int r=DEFAULT_ALLOC, int c=DEFAULT_ALLOC);
+    Matrix(const Vec3f& v);
     inline int nrows();
     inline int ncols();
 
@@ -84,8 +86,11 @@ public:
     Matrix transpose();
     Matrix inverse();
 
+    Vec3f GetM2V();
     friend std::ostream& operator<<(std::ostream& s, Matrix& m);
 };
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
