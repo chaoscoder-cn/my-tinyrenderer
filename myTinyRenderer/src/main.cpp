@@ -2,33 +2,23 @@
 #include "DrawLine.h"
 #include "DrawTriangle.h"
 #include "model.h"
-
+#include "Shader.h"
+#include "Log.h"
+#define NOMINMAX
 
 const int width = 800;
 const int height = 800;
 const int depth = 255;
-float zBuffer[width * height+10];
-Vec3f camera(0, 0, 2);
 
-Vec3f eye(2, 1, 3);
-Vec3f center(0, 0, 1);
+Vec3f eye(1, 0.5, 1.5);
+Vec3f center(0, 0, 0);
+Vec3f up(0, 1, 0);
 
-Vec3f m2v(Matrix m)
-{
-	return Vec3f(m[0][0] / m[3][0], m[1][0] / m[3][0], m[2][0] / m[3][0]);
-}
+
 
 //3d-->4d
 //添加一个1表示坐标
-Matrix v2m(Vec3f v)
-{
-	Matrix m(4, 1);
-	m[0][0] = v.x;
-	m[1][0] = v.y;
-	m[2][0] = v.z;
-	m[3][0] = 1.f;
-	return m;
-}
+
 
 //视角矩阵
 //将物体x，y坐标(-1,1)转换到屏幕坐标(100,700)    1/8width~7/8width
@@ -78,63 +68,110 @@ Matrix lookat(Vec3f eye, Vec3f center, Vec3f up)
 
 }
 
+void GetTriangleBound(const Vec3f& p1, const Vec3f& p2, const Vec3f& p3, Point& leftTop, Point& rightBottom)
+{
+	float min_x = std::min(std::min(p1.x, p2.x), p3.x);
+	float min_y = std::min(std::min(p1.y, p2.y), p3.y);
+	float max_x = std::max(std::max(p1.x, p2.x), p3.x);
+	float max_y = std::max(std::max(p1.y, p2.y), p3.y);
+
+	leftTop.x = std::floor(min_x);
+	leftTop.y = std::floor(min_y);
+
+	rightBottom.x = std::ceil(max_x);
+	rightBottom.y = std::ceil(max_y);
+}
+
+Vec3f Barycentric(Vec3f* pts, const Vec3f& P)
+{
+	float xa = pts[0].x;
+	float ya = pts[0].y;
+	float xb = pts[1].x;
+	float yb = pts[1].y;
+	float xc = pts[2].x;
+	float yc = pts[2].y;
+
+	float x = P.x;
+	float y = P.y;
+
+	float gamma = ((ya - yb) * x + (xb - xa) * y + xa * yb - xb * ya) / ((ya - yb) * xc + (xb - xa) * yc + xa * yb - xb * ya);
+	float beta = ((ya - yc) * x + (xc - xa) * y + xa * yc - xc * ya) / ((ya - yc) * xb + (xc - xa) * yb + xa * yc - xc * ya);
+	float alpha = 1 - gamma - beta;
+
+	return Vec3f(alpha, beta, gamma);
+}
+
+void triangle(Vec3f* pts,IShader& shader,TGAImage&image, TGAImage& zbuffer)
+{
+	Point leftTop, rightBottom;
+	GetTriangleBound(pts[0], pts[1], pts[2], leftTop, rightBottom);
+
+	TGAColor color;
+
+	for (int x = leftTop.x; x <= rightBottom.x; x++)
+	{
+		for (int y = leftTop.y; y <= rightBottom.y; y++)
+		{
+			Vec3f p(x, y, 0);
+			Vec3f baryCoord = Barycentric(pts, p);
+			if (baryCoord.x < -1e-2 || baryCoord.y < -1e-2 || baryCoord.z < -1e-2)
+				continue;
+
+			float z = pts[0].z * baryCoord.x + pts[1].z * baryCoord.y + pts[2].z * baryCoord.z;
+
+			int frag_depth = static_cast<int>(std::max(0.f, std::ceil(z)));
+			if (zbuffer.get(x,y).val <= frag_depth)
+			{
+				bool discard = shader.fragment(baryCoord, color);
+				if(!discard)
+				{
+					zbuffer.set(x, y, TGAColor(frag_depth));
+					image.set(x, y, color);
+				}
+			}
+		}
+	}
+}
+
+
 int main()
 {
 	TGAImage tgaImage(width, height, TGAImage::RGB);
-	DrawTriangleByDepth drawTriangleByDepth(width, height);
+	TGAImage zbufferImage(width, height, TGAImage::RGB);
 
 	std::string obj_path = "african_head.obj";
-	
-	memset(zBuffer, -0x3f, sizeof(zBuffer));
 
-
-	Matrix ModelView = lookat(eye, center, Vec3f(0, 1, 0));
-
+	Matrix ModelView = lookat(eye, center, up);
 	Matrix Projection = Matrix::identity(4);
-	Matrix ViewPort = viewport(width / 8.0, height / 8.0, width * 3.0 / 4, height * 3.0 / 4);
-
 	Projection[3][2] = -1.f / (eye - center).norm();
-
-
-
-
-
+	Matrix ViewPort = viewport(width / 8.0, height / 8.0, width * 3.0 / 4, height * 3.0 / 4);
 
 	Model model(obj_path.data());
 
+	IShader* shader = new PhongShader();
+	shader->setModel(&model);
+	shader->setModelProjectionViewMatrix(&ModelView, &Projection, &ViewPort);
 
-	Vec3f light_dir = Vec3f(0, 1, 1).normalize();	
 	for (int i = 0; i < model.nfaces(); i++)
 	{
-		std::vector<int>face_i = model.face(i);
-		Vec3f p[3];
-		Vec3f w[3];
-		Vec3f intensity;
-		for (int j = 0; j < 3; j++)
-		{
-			Vec3f v = model.vert(face_i[j]);
+		Vec3f v[3];
+		for(int j=0;j<3;j++)
+			v[j] = shader->vertex(i, j);
 
-			w[j] = model.vert(face_i[j]);
-			//1. World To CameraView
-			Matrix m_v = ModelView * v2m(v);
-			//2. CameraView To Projection
-			//3. Projection to ViewPort
-			p[j] = m2v(ViewPort * Projection * m_v);
-			intensity[j] = model.normal(i, j) * light_dir;
-			
-		}
-		{
-			Vec2i uv[3];
-			for (int j = 0; j < 3; j++) 
-				uv[j] = model.uv(i, j);
-
-			drawTriangleByDepth.DrawTriangleByUV(p, uv, zBuffer, tgaImage, model, intensity);
-
-		}
+		triangle(v, *shader, tgaImage, zbufferImage);
 	}
 
 	tgaImage.flip_vertically();
-	tgaImage.write_tga_file("obj_5.tga");
+	if (dynamic_cast<GouraudShader*>(shader) != nullptr)
+		tgaImage.write_tga_file("obj_gouraud.tga");
+	if(dynamic_cast<ToonShader*>(shader)!=nullptr)
+		tgaImage.write_tga_file("obj_toon.tga");
+	if (dynamic_cast<FlatShader*>(shader) != nullptr)
+		tgaImage.write_tga_file("obj_flat.tga");
+	if (dynamic_cast<PhongShader*>(shader) != nullptr)
+		tgaImage.write_tga_file("obj_phong.tga");
 
+	zbufferImage.flip_vertically();
+	zbufferImage.write_tga_file("zbuffer.tga");
 	return 0;
 }
